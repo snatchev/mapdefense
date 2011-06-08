@@ -74,12 +74,13 @@ function initialize(){
       MD.path = result.routes[0].overview_path;
     });
 
+  /*
   Fx.schedule(function(){
     MD.badGuy.setPosition(
       S.interpolate(MD.badGuy.position, MD.path[1], this.elapsed)
     )
   }, 1000);
-
+  */
 }
 
 
@@ -98,9 +99,30 @@ function tick(){
 }*/
 
 /******************************/
+S2.FX.Operators.Position = Class.create(S2.FX.Operators.Base, {
+  initialize: function($super, object, options) {
+    $super(null, object, options);
+    this.start = object.position;
+    this.end = this.options.position;
+  },
+  setup: function(){
+     console.log('setup called');
+  },
 
-var Creep = Class.extend({
-  init: function(position){
+  valueAt: function(position) {
+    return S.interpolate(this.start, this.end, position);
+  },
+
+  applyValue: function(value){
+    this.object.setPosition(value);
+  }
+});
+
+
+/******************************/
+
+var Creep = Class.create({
+  initialize: function(position){
      this.marker = new google.maps.Marker({ position: position, map:MD.map, icon:'roach.png'});
   },
   position: function(){
@@ -110,3 +132,5 @@ var Creep = Class.extend({
     this.marker.setPosition(point);
   }
 });
+
+
