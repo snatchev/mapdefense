@@ -100,9 +100,9 @@ function tick(){
 
 /******************************/
 S2.FX.Operators.Position = Class.create(S2.FX.Operators.Base, {
-  initialize: function($super, object, options) {
-    $super(null, object, options);
-    this.start = object.position;
+  initialize: function($super, effect, object, options) {
+    $super(effect, object, options);
+    this.start = object.position();
     this.end = this.options.position;
   },
   setup: function(){
@@ -115,6 +115,50 @@ S2.FX.Operators.Position = Class.create(S2.FX.Operators.Base, {
 
   applyValue: function(value){
     this.object.setPosition(value);
+  }
+});
+
+S2.FX.Entity = Class.create(S2.FX.Base, {
+  /**
+   *  new S2.FX.Element(element[, options])
+   *  - element (Object | String): DOM element or element ID
+   *  - options (Number | Function | Object): options for the effect.
+   *
+   *  See [[S2.FX.Base]] for a description of the `options` argument.
+  **/
+  initialize: function($super, element, options) {
+    this.element = element
+    this.operators = [];
+    return $super(options);
+  },
+
+  /**
+   *  S2.FX.Element#animate(operator[, args...]) -> undefined
+   *  - operator (String): lowercase name of an [[S2.FX.Operator]]
+   *
+   *  Starts an animation by using a [[S2.FX.Operator]] on the element
+   *  that is associated with the effect.
+   *  
+   *  The rest of the arguments are passed to Operators' constructor.
+   *  This method is intended to be called in the `setup` instance method
+   *  of subclasses, for example:
+   *
+   *      // setup method from S2.FX.Style
+   *      setup: function() {
+   *        this.animate('style', this.element, { style: this.options.style }); 
+   *      }
+  **/
+  animate: function() {
+    var args = $A(arguments), operator =  args.shift();
+    operator = operator.charAt(0).toUpperCase() + operator.substring(1);
+    this.operators.push(new S2.FX.Operators[operator](this, args[0], args[1] || {}));
+  },
+
+
+  update: function(position) {
+    for (var i = 0, operator; operator = this.operators[i]; i++) {
+      operator.render(position);
+    }
   }
 });
 
@@ -133,4 +177,9 @@ var Creep = Class.create({
   }
 });
 
+/*
+var c = new S2.FX.Entity(MD.badGuy);
+c.animate('position', c.element, {position: MD.path[1]})
+c.play()
 
+*/
